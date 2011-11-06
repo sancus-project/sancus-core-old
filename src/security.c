@@ -26,12 +26,60 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _SANCUS_H
-#define _SANCUS_H
+
+#include <sys/types.h>
+#include <limits.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
+#include <paths.h>
+
+#include "sancus.h"
+
+#ifndef OPEN_MAX
+#define	OPEN_MAX sysconf(_SC_OPEN_MAX)
+#endif
 
 /*
- * security
+ * See O'Reilly's Secure Programming Cookbook (0-596-00394-3)
+ * 1.5 Managing File Descriptors Safely
  */
-void sancus_sanitize_files(void);
+static inline int reopen_devnull(int fd) {
+	FILE *f = NULL;
+	FILE *f0 = NULL;
+	const char *mode = "wb";
 
-#endif /* !_SANCUS_H */
+	switch(fd) {
+	case 0:
+		f0 = stdin;
+		mode = "rb";
+		break;
+	case 1:
+		f0 = stdout;
+		break;
+	case 2:
+		f0 = stderr;
+		break;
+	};
+
+	if (f0)
+		f = freopen(_PATH_DEVNULL, mode, f0);
+
+	return (f && fileno(f) == fd);
+}
+
+void sancus_sanitize_files(void) {
+	int fd, fds;
+	struct stat st;
+
+	if ((fds=getdtablesize()) == -1)
+		fds = OPEN_MAX;
+	for (fd=3; fd<fds; fd++)
+		close(fd);
+
+	for (fd=0; fd<3; fd++)
+		if (fstat(fd, &st) == -1 &&
+		    (errno != EBADF || !reopen_devnull(fd)))
+			abort( );
+}
