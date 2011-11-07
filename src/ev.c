@@ -1,5 +1,5 @@
 /*
- * This file is part of sancus-core <http://github.com/amery/sancus-core>
+ * This file is part of sancus-core <http://github.com/amery/sancus-core>>
  *
  * Copyright (c) 2011, Alejandro Mery <amery@geeks.cl>
  * All rights reserved.
@@ -26,22 +26,32 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _SANCUS_H
-#define _SANCUS_H
+
+#include <ev.h>
+
+#include "sancus.h"
 
 /*
- * opaque types
+ * types
  */
-typedef struct sancus_loop *sancus_loop;
+struct sancus_loop {
+	struct ev_loop *loop;
+};
 
 /*
- * security
+ * helpers
  */
-void sancus_sanitize_files(void);
+static inline struct ev_loop *get_ev_loop(sancus_loop loop)
+{
+	if (loop && loop->loop)
+		return loop->loop;
+	return ev_default_loop(0);
+}
 
 /*
- * event loop
+ * exported
  */
-void sancus_loop_run(sancus_loop);
-
-#endif /* !_SANCUS_H */
+void sancus_loop_run(sancus_loop loop)
+{
+	ev_run(get_ev_loop(loop), 0);
+}
