@@ -17,7 +17,7 @@ AC_PROG_CC_C99
 # Check for libraries
 #
 
-PKG_CHECK_MODULES(libev, [libev])
+PKG_CHECK_MODULES(EV, [libev])
 
 AC_CONFIG_FILES([sancus-core.pc])
 AC_CONFIG_FILES([Makefile
