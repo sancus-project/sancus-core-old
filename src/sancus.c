@@ -1,7 +1,7 @@
 /*
- * This file is part of libeh <http://github.com/amery/libeh>
+ * This file is part of sancus-core <http://github.com/amery/sancus-core>>
  *
- * Copyright (c) 2010, Alejandro Mery <amery@geeks.cl>
+ * Copyright (c) 2011, Alejandro Mery <amery@geeks.cl>
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
