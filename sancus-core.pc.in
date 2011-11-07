@@ -6,3 +6,6 @@ includedir=@includedir@
 Name: @PACKAGE_NAME@
 Version: @PACKAGE_VERSION@
 Description: An event-driven C framework for network servers
+
+Libs: -L${libdir} -lsancus
+Cflags: -I${includedir}
