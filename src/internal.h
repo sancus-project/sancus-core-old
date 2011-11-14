@@ -27,22 +27,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "internal.h"
+#include <ev.h>
+
+#include "sancus.h"
 
 /*
- * helpers
+ * types
  */
-static inline struct ev_loop *get_ev_loop(sancus_state loop)
-{
-	if (loop && loop->loop)
-		return loop->loop;
-	return ev_default_loop(0);
-}
-
-/*
- * exported
- */
-void sancus_run(sancus_state loop)
-{
-	ev_run(get_ev_loop(loop), 0);
-}
+struct sancus_state {
+	struct ev_loop *loop;
+};
