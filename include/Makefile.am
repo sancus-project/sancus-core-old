@@ -1,1 +1,2 @@
-include_HEADERS = sancus.h
+include_HEADERS = \
+	sancus.h
