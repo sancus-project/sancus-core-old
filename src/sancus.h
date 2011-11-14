@@ -32,7 +32,7 @@
 /*
  * opaque types
  */
-typedef struct sancus_loop *sancus_loop;
+typedef struct sancus_state *sancus_state;
 
 /*
  * security
@@ -42,6 +42,6 @@ void sancus_sanitize_files(void);
 /*
  * event loop
  */
-void sancus_loop_run(sancus_loop);
+void sancus_run(sancus_state);
 
 #endif /* !_SANCUS_H */

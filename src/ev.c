@@ -34,14 +34,14 @@
 /*
  * types
  */
-struct sancus_loop {
+struct sancus_state {
 	struct ev_loop *loop;
 };
 
 /*
  * helpers
  */
-static inline struct ev_loop *get_ev_loop(sancus_loop loop)
+static inline struct ev_loop *get_ev_loop(sancus_state loop)
 {
 	if (loop && loop->loop)
 		return loop->loop;
@@ -51,7 +51,7 @@ static inline struct ev_loop *get_ev_loop(sancus_loop loop)
 /*
  * exported
  */
-void sancus_loop_run(sancus_loop loop)
+void sancus_run(sancus_state loop)
 {
 	ev_run(get_ev_loop(loop), 0);
 }
