@@ -45,5 +45,6 @@ CFLAGS="$CFLAGS -Wall -Wextra -pedantic -Winline"
 AC_CONFIG_FILES([sancus-core.pc])
 AC_CONFIG_FILES([Makefile
 		 doc/Makefile
+		 include/Makefile
 		 src/Makefile])
 AC_OUTPUT

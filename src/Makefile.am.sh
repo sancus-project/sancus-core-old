@@ -7,12 +7,10 @@ list() {
 
 cd "${0%/*}"
 cat <<EOT | tee Makefile.am
-AM_CFLAGS = \$(EV_CFLAGS)
+AM_CFLAGS = -I @top_srcdir@/include \$(EV_CFLAGS)
 
 lib_LTLIBRARIES = libsancus.la
 
 libsancus_la_SOURCES = \\
 	$(list *.c)
-
-include_HEADERS = sancus.h
 EOT
