@@ -1,2 +1,2 @@
 include_HEADERS = \
-	sancus.h
+	sancus.h sancus_common.h
