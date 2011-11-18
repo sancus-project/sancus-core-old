@@ -31,15 +31,17 @@
 
 #include "ev/common.h"
 
+static struct sancus_state default_state;
+
 /*
  * helpers
  */
-static inline void sancus_state_init(sancus_state self, struct ev_loop *loop)
+static inline void sancus_state_init(sancus_state s, struct ev_loop *loop)
 {
 	assert(loop);
 
-	self->loop = loop;
-	sancus_list_init(&self->signal_watchers);
+	s->loop = loop;
+	sancus_list_init(&s->signal_watchers);
 }
 
 /*
@@ -47,11 +49,11 @@ static inline void sancus_state_init(sancus_state self, struct ev_loop *loop)
  */
 sancus_state sancus_init(void)
 {
-	static struct sancus_state s;
-	if (!s.loop)
-		sancus_state_init(&s, ev_default_loop(0));
+	sancus_state s = &default_state;
+	if (!s->loop)
+		sancus_state_init(s, ev_default_loop(0));
 
-	return &s;
+	return s;
 }
 
 void sancus_finish(void)
@@ -59,7 +61,7 @@ void sancus_finish(void)
 	/* NOP */
 }
 
-void sancus_run(sancus_state self)
+void sancus_run(sancus_state s)
 {
-	ev_run(self->loop, 0);
+	ev_run(s->loop, 0);
 }
