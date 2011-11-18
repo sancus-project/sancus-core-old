@@ -40,6 +40,12 @@ typedef struct sancus_state *sancus_state;
 void sancus_sanitize_files(void);
 
 /*
+ * Default state
+ */
+sancus_state sancus_init(void);
+void sancus_finish(void);
+
+/*
  * event loop
  */
 void sancus_run(sancus_state);

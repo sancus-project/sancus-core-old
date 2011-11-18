@@ -30,19 +30,23 @@
 #include "ev/common.h"
 
 /*
- * helpers
- */
-static inline struct ev_loop *get_ev_loop(sancus_state loop)
-{
-	if (loop && loop->loop)
-		return loop->loop;
-	return ev_default_loop(0);
-}
-
-/*
  * exported
  */
-void sancus_run(sancus_state loop)
+sancus_state sancus_init(void)
 {
-	ev_run(get_ev_loop(loop), 0);
+	static struct sancus_state s;
+	if (!s.loop)
+		s.loop = ev_default_loop(0);
+
+	return &s;
+}
+
+void sancus_finish(void)
+{
+	/* NOP */
+}
+
+void sancus_run(sancus_state self)
+{
+	ev_run(self->loop, 0);
 }
