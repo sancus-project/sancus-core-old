@@ -27,7 +27,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
+
 #include "ev/common.h"
+
+/*
+ * helpers
+ */
+static inline void sancus_state_init(sancus_state self, struct ev_loop *loop)
+{
+	assert(loop);
+
+	self->loop = loop;
+	sancus_list_init(&self->signal_watchers);
+}
 
 /*
  * exported
@@ -36,7 +49,7 @@ sancus_state sancus_init(void)
 {
 	static struct sancus_state s;
 	if (!s.loop)
-		s.loop = ev_default_loop(0);
+		sancus_state_init(&s, ev_default_loop(0));
 
 	return &s;
 }

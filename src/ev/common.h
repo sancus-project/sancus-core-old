@@ -30,10 +30,13 @@
 #include <ev.h>
 
 #include "sancus.h"
+#include "sancus_list.h"
 
 /*
  * types
  */
 struct sancus_state {
 	struct ev_loop *loop;
+
+	struct sancus_list signal_watchers;
 };
