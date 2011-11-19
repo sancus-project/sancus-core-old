@@ -32,7 +32,7 @@
 /*
  * opaque types
  */
-typedef struct sancus_state *sancus_state;
+typedef struct sancus_state *SancusState;
 
 /*
  * security
@@ -40,14 +40,25 @@ typedef struct sancus_state *sancus_state;
 void sancus_sanitize_files(void);
 
 /*
- * Default state
+ * State
  */
-sancus_state sancus_init(void);
-void sancus_finish(void);
+SancusState sancus_state_new(void);
+void sancus_state_delete(SancusState);
+
+SancusState sancus_state_init(SancusState);
+SancusState sancus_state_finish(SancusState);
+
+void sancus_state_run(SancusState);
+void sancus_state_stop(SancusState);
 
 /*
- * event loop
+ * Default State
  */
-void sancus_run(sancus_state);
+SancusState sancus_init(void);
+void sancus_finish(void);
+
+SancusState sancus_default_state(void);
+#define sancus_run()	sancus_state_run(sancus_default_state())
+#define sancus_stop()	sancus_state_stop(sancus_default_state())
 
 #endif /* !_SANCUS_H */

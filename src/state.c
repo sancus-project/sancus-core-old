@@ -1,5 +1,5 @@
 /*
- * This file is part of sancus-core <http://github.com/amery/sancus-core>>
+ * This file is part of sancus-core <http://github.com/amery/sancus-core>
  *
  * Copyright (c) 2011, Alejandro Mery <amery@geeks.cl>
  * All rights reserved.
@@ -36,7 +36,7 @@ static struct sancus_state default_state;
 /*
  * helpers
  */
-static inline void sancus_state_init(sancus_state s, struct ev_loop *loop)
+static inline void _state_init(SancusState s, struct ev_loop *loop)
 {
 	assert(loop);
 
@@ -47,13 +47,19 @@ static inline void sancus_state_init(sancus_state s, struct ev_loop *loop)
 /*
  * exported
  */
-sancus_state sancus_init(void)
+SancusState sancus_init(void)
 {
-	sancus_state s = &default_state;
+	SancusState s = &default_state;
 	if (!s->loop)
-		sancus_state_init(s, ev_default_loop(0));
+		_state_init(s, ev_default_loop(0));
 
 	return s;
+}
+
+SancusState sancus_default_state(void)
+{
+	assert(default_state.loop);
+	return &default_state;
 }
 
 void sancus_finish(void)
@@ -61,7 +67,8 @@ void sancus_finish(void)
 	/* NOP */
 }
 
-void sancus_run(sancus_state s)
+void sancus_state_run(SancusState s)
 {
+	assert(s);
 	ev_run(s->loop, 0);
 }
