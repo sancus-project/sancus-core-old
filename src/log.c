@@ -50,11 +50,30 @@
 #define STR_BUFSIZE 1024
 #define TRACE_STR_BUFSIZE 1024
 
+static inline size_t strlen_trimmed(const char *str)
+{
+	const char *p = str;
+	size_t l = 0;
+
+	if (str && str[0])
+		l = strlen(str);
+	p += l;
+
+	while (p != str) {
+		char c = *--p;
+		if (c == '\n' || c == '\r' || c == ' ' || c == '\t')
+			--l;
+		else
+			break;
+	}
+	return l;
+}
+
 static inline ssize_t _write(enum sancus_log_level level, const char *name,
 			     const char *trace_str, const char* str)
 {
 	struct iovec v[6];
-	int l=0;
+	size_t l=0, l2;
 	char level_s[] = "<0> ";
 
 	/* "<?> " */
@@ -67,14 +86,14 @@ static inline ssize_t _write(enum sancus_log_level level, const char *name,
 	}
 
 	/* "name: " */
-	if (name && name[0]) {
-		v[l++] = (struct iovec) { (void*)name, (size_t)strlen(name) };
+	if ((l2 = strlen_trimmed(name)) > 0) {
+		v[l++] = (struct iovec) { (void*)name, l2 };
 		v[l++] = (struct iovec) { ": ", 2 };
 	}
 
 	/* "str" */
-	if (str && str[0]) {
-		v[l++] = (struct iovec) { (void*)str, (size_t)strlen(str) };
+	if ((l2 = strlen_trimmed(str)) > 0) {
+		v[l++] = (struct iovec) { (void*)str, l2 };
 	}
 
 	v[l++] = (struct iovec) { "\n", 1 };
