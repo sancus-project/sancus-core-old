@@ -63,4 +63,12 @@
 #define ELEMENTS(A)	(sizeof(A)/sizeof((A)[0]))
 #endif
 
+/** Check printf format */
+#ifdef TYPECHECK_PRINTF
+#elif defined(__GNUC__)
+#       define TYPECHECK_PRINTF(I, J)   __attribute__ ((format (printf, I, J)))
+#else
+#       define TYPECHECK_PRINTF(I, J)
+#endif
+
 #endif /* !_SANCUS_COMMON_H */
