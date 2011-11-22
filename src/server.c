@@ -76,9 +76,10 @@ static inline int init_ipv6(struct sockaddr_in6 *sin6, const char *addr, unsigne
 {
 	sin6->sin6_port = htons(port);
 
-	/* NULL, "", "0" and "*" mean any address */
+	/* NULL, "", "::" and "*" mean any address */
 	if (addr == NULL || addr[0] == '\0' ||
-	    ((addr[0] == '0' || addr[0] == '*') && addr[1] == '\0')) {
+	    (addr[0] == '*' && addr[1] == '\0') ||
+	    (addr[0] == ':' && addr[1] == ':' && addr[2] == '\0')) {
 		sin6->sin6_addr = in6addr_any;
 		return 1;
 	}
