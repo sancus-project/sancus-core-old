@@ -73,6 +73,21 @@ static inline int init_ipv4(struct sockaddr_in *sin, const char *addr, unsigned 
 	return inet_pton(sin->sin_family, addr, &sin->sin_addr);
 }
 
+static inline int init_ipv6(struct sockaddr_in6 *sin6, const char *addr, unsigned port)
+{
+	sin6->sin6_family = AF_INET6;
+	sin6->sin6_port = htons(port);
+
+	/* NULL, "", "0" and "*" mean any address */
+	if (addr == NULL || addr[0] == '\0' ||
+	    ((addr[0] == '0' || addr[0] == '*') && addr[1] == '\0')) {
+		sin6->sin6_addr = in6addr_any;
+		return 1;
+	}
+
+	return inet_pton(sin6->sin6_family, addr, &sin6->sin6_addr);
+}
+
 static inline int init_local(struct sockaddr_un *sun, const char *path)
 {
 	size_t l = 0;
@@ -127,6 +142,18 @@ int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, uns
 		return e; /* 0 or -1, inet_pton() failed */
 
 	return init_tcp(self, (struct sockaddr *)&sin, sizeof(sin), cloexec);
+}
+
+int sancus_tcp_ipv6_server(struct sancus_tcp_server *self, const char *addr, unsigned port,
+			   bool cloexec)
+{
+	struct sockaddr_in6 sin6;
+	int e;
+
+	if ((e = init_ipv6(&sin6, addr, port)) != 1)
+		return e; /* 0 or -1, inet_pton() failed */
+
+	return init_tcp(self, (struct sockaddr *)&sin6, sizeof(sin6), cloexec);
 }
 
 int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bool cloexec)
