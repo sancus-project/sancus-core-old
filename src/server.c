@@ -31,6 +31,7 @@
 #include <stdbool.h>
 
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <arpa/inet.h>
 
 #include "sancus_socket.h"
@@ -53,11 +54,28 @@ static inline int init_ipv4(struct sockaddr_in *sin, const char *addr, unsigned 
 	return inet_pton(sin->sin_family, addr, &sin->sin_addr);
 }
 
+static inline int init_local(struct sockaddr_un *sun, const char *path)
+{
+	size_t l = 0;
+
+	if (path == NULL) {
+		path = "";
+	} else {
+		l = strlen(path);
+		if (l > sizeof(sun->sun_path)-1)
+			return 0; /* too long */
+	}
+
+	sun->sun_family = AF_LOCAL;
+	memcpy(sun->sun_path, path, l+1);
+	return 1;
+}
+
 static inline int init_tcp(int family, bool cloexec)
 {
 	int fd = sancus_socket(family, SOCK_STREAM, cloexec, true);
 
-	if (fd >= 0) {
+	if (fd >= 0 && family != AF_LOCAL) {
 		int flags = 1;
 		struct linger ling = {0,0}; /* disabled */
 
@@ -75,15 +93,34 @@ int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, uns
 			   bool cloexec)
 {
 	struct sockaddr_in sin;
-	int fd;
+	int fd, e;
 
-	int e = init_ipv4(&sin, addr, port);
-	if (e != 1)
+	if ((e = init_ipv4(&sin, addr, port)) != 1)
 		return e; /* 0 or -1, inet_pton() failed */
 
 	if ((fd = init_tcp(sin.sin_family, cloexec)) < 0)
 		return -1; /* socket() failed */
 	else if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+		close(fd);
+		return -1; /* bind() failed */
+	}
+
+	self->fd = fd;
+	return 1;
+}
+
+int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bool cloexec)
+{
+	struct sockaddr_un sun;
+	int fd, e;
+
+	if ((e = init_local(&sun, path)) != 1)
+		return e; /* 0 or -1 */
+	unlink(path);
+
+	if ((fd = init_tcp(sun.sun_family, cloexec)) < 0)
+		return -1; /* socket() failed */
+	else if (bind(fd, (struct sockaddr *)&sun, SUN_LEN(&sun)) < 0) {
 		close(fd);
 		return -1; /* bind() failed */
 	}

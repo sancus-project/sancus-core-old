@@ -35,5 +35,6 @@ struct sancus_tcp_server {
 
 int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, unsigned port,
 			   bool cloexec);
+int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bool cloexec);
 
 #endif /* !_SANCUS_SERVER_H */
