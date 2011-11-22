@@ -90,11 +90,13 @@ static inline int init_local(struct sockaddr_un *sun, const char *path)
 	return 1;
 }
 
-static inline int init_tcp(int family, bool cloexec)
+static inline int init_tcp(struct sancus_tcp_server *self, struct sockaddr *sa, socklen_t sa_len, bool cloexec)
 {
-	int fd = sancus_socket(family, SOCK_STREAM, cloexec, true);
+	int fd = sancus_socket(sa->sa_family, SOCK_STREAM, cloexec, true);
+	if (fd < 0)
+		return -1;
 
-	if (fd >= 0 && family != AF_LOCAL) {
+	if (sa->sa_family != AF_LOCAL) {
 		int flags = 1;
 		struct linger ling = {0,0}; /* disabled */
 
@@ -103,13 +105,14 @@ static inline int init_tcp(int family, bool cloexec)
 		setsockopt(fd, SOL_SOCKET, SO_LINGER, (void*)&ling, sizeof(ling));
 	}
 
-	return fd;
-}
+	if (bind(fd, sa, sa_len) < 0) {
+		close(fd);
+		return -1;
+	}
 
-static inline void init_tcp_watcher(struct sancus_tcp_server *self, int fd)
-{
 	ev_io_init(&self->connection_watcher, connect_callback, fd, EV_READ);
 	self->connection_watcher.data = self;
+	return 1;
 }
 
 /*
@@ -118,38 +121,22 @@ int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, uns
 			   bool cloexec)
 {
 	struct sockaddr_in sin;
-	int fd, e;
+	int e;
 
 	if ((e = init_ipv4(&sin, addr, port)) != 1)
 		return e; /* 0 or -1, inet_pton() failed */
 
-	if ((fd = init_tcp(sin.sin_family, cloexec)) < 0)
-		return -1; /* socket() failed */
-	else if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
-		close(fd);
-		return -1; /* bind() failed */
-	}
-
-	init_tcp_watcher(self, fd);
-	return 1;
+	return init_tcp(self, (struct sockaddr *)&sin, sizeof(sin), cloexec);
 }
 
 int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bool cloexec)
 {
 	struct sockaddr_un sun;
-	int fd, e;
+	int e;
 
 	if ((e = init_local(&sun, path)) != 1)
 		return e; /* 0 or -1 */
 	unlink(path);
 
-	if ((fd = init_tcp(sun.sun_family, cloexec)) < 0)
-		return -1; /* socket() failed */
-	else if (bind(fd, (struct sockaddr *)&sun, SUN_LEN(&sun)) < 0) {
-		close(fd);
-		return -1; /* bind() failed */
-	}
-
-	init_tcp_watcher(self, fd);
-	return 1;
+	return init_tcp(self, (struct sockaddr *)&sun, SUN_LEN(&sun), cloexec);
 }
