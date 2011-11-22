@@ -60,7 +60,6 @@ static void connect_callback(struct ev_loop *loop, ev_io *w, int revents)
  */
 static inline int init_ipv4(struct sockaddr_in *sin, const char *addr, unsigned port)
 {
-	sin->sin_family = AF_INET;
 	sin->sin_port = htons(port);
 
 	/* NULL, "", "0" and "*" mean any address */
@@ -75,7 +74,6 @@ static inline int init_ipv4(struct sockaddr_in *sin, const char *addr, unsigned 
 
 static inline int init_ipv6(struct sockaddr_in6 *sin6, const char *addr, unsigned port)
 {
-	sin6->sin6_family = AF_INET6;
 	sin6->sin6_port = htons(port);
 
 	/* NULL, "", "0" and "*" mean any address */
@@ -100,7 +98,6 @@ static inline int init_local(struct sockaddr_un *sun, const char *path)
 			return 0; /* too long */
 	}
 
-	sun->sun_family = AF_LOCAL;
 	memcpy(sun->sun_path, path, l+1);
 	return 1;
 }
@@ -135,7 +132,7 @@ static inline int init_tcp(struct sancus_tcp_server *self, struct sockaddr *sa, 
 int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, unsigned port,
 			   bool cloexec)
 {
-	struct sockaddr_in sin;
+	struct sockaddr_in sin = { .sin_family = AF_INET };
 	int e;
 
 	if ((e = init_ipv4(&sin, addr, port)) != 1)
@@ -147,7 +144,7 @@ int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, uns
 int sancus_tcp_ipv6_server(struct sancus_tcp_server *self, const char *addr, unsigned port,
 			   bool cloexec)
 {
-	struct sockaddr_in6 sin6;
+	struct sockaddr_in6 sin6 = { .sin6_family = AF_INET6 };
 	int e;
 
 	if ((e = init_ipv6(&sin6, addr, port)) != 1)
@@ -158,7 +155,7 @@ int sancus_tcp_ipv6_server(struct sancus_tcp_server *self, const char *addr, uns
 
 int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bool cloexec)
 {
-	struct sockaddr_un sun;
+	struct sockaddr_un sun = { .sun_family = AF_LOCAL };
 	int e;
 
 	if ((e = init_local(&sun, path)) != 1)

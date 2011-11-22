@@ -29,6 +29,11 @@
 #ifndef _SANCUS_SERVER_H
 #define _SANCUS_SERVER_H
 
+enum sancus_tcp_server_error {
+	SANCUS_TCP_SERVER_WATCHER_ERROR,
+	SANCUS_TCP_SERVER_ACCEPT_ERROR,
+};
+
 struct sancus_tcp_server {
 	ev_io connection_watcher;
 };
