@@ -37,4 +37,8 @@ int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, uns
 			   bool cloexec);
 int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bool cloexec);
 
+int sancus_tcp_server_listen(struct sancus_tcp_server *self, unsigned backlog);
+void sancus_tcp_server_start(struct sancus_tcp_server *self, struct ev_loop *loop);
+void sancus_tcp_server_stop(struct sancus_tcp_server *self, struct ev_loop *loop);
+
 #endif /* !_SANCUS_SERVER_H */

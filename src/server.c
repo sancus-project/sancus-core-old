@@ -140,3 +140,18 @@ int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bo
 
 	return init_tcp(self, (struct sockaddr *)&sun, SUN_LEN(&sun), cloexec);
 }
+
+int sancus_tcp_server_listen(struct sancus_tcp_server *self, unsigned backlog)
+{
+	return listen(self->connection_watcher.fd, backlog);
+}
+
+void sancus_tcp_server_start(struct sancus_tcp_server *self, struct ev_loop *loop)
+{
+	ev_io_start(loop, &self->connection_watcher);
+}
+
+void sancus_tcp_server_stop(struct sancus_tcp_server *self, struct ev_loop *loop)
+{
+	ev_io_stop(loop, &self->connection_watcher);
+}
