@@ -30,7 +30,7 @@
 #define _SANCUS_SERVER_H
 
 struct sancus_tcp_server {
-	int fd;
+	ev_io connection_watcher;
 };
 
 int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, unsigned port,

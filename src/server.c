@@ -34,8 +34,27 @@
 #include <sys/un.h>
 #include <arpa/inet.h>
 
+#include <ev.h>
+
 #include "sancus_socket.h"
 #include "sancus_server.h"
+
+/*
+ */
+static void connect_callback(struct ev_loop *loop, ev_io *w, int revents)
+{
+	if (revents & EV_READ) {
+		struct sockaddr_storage addr;
+		socklen_t addrlen = sizeof(addr);
+
+		int fd = accept(w->fd, (struct sockaddr *)&addr, &addrlen);
+
+		if (fd >= 0)
+			close(fd);
+	}
+
+	(void)loop;
+}
 
 /*
  */
@@ -87,6 +106,12 @@ static inline int init_tcp(int family, bool cloexec)
 	return fd;
 }
 
+static inline void init_tcp_watcher(struct sancus_tcp_server *self, int fd)
+{
+	ev_io_init(&self->connection_watcher, connect_callback, fd, EV_READ);
+	self->connection_watcher.data = self;
+}
+
 /*
  */
 int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, unsigned port,
@@ -105,7 +130,7 @@ int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, uns
 		return -1; /* bind() failed */
 	}
 
-	self->fd = fd;
+	init_tcp_watcher(self, fd);
 	return 1;
 }
 
@@ -125,6 +150,6 @@ int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bo
 		return -1; /* bind() failed */
 	}
 
-	self->fd = fd;
+	init_tcp_watcher(self, fd);
 	return 1;
 }
