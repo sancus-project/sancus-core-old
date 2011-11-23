@@ -113,7 +113,8 @@ static inline int init_local(struct sockaddr_un *sun, const char *path)
 	return 1;
 }
 
-static inline int init_tcp(struct sancus_tcp_port *self, struct sockaddr *sa, socklen_t sa_len,
+static inline int init_tcp(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
+			   struct sockaddr *sa, socklen_t sa_len,
 			   bool cloexec, void (*sockopts) (int))
 {
 	int fd = sancus_socket(sa->sa_family, SOCK_STREAM, cloexec, true);
@@ -139,12 +140,14 @@ static inline int init_tcp(struct sancus_tcp_port *self, struct sockaddr *sa, so
 	ev_io_init(&self->connection_watcher, connect_callback, fd, EV_READ);
 	self->connection_watcher.data = self;
 
+	sancus_list_init(&self->ports);
+	sancus_list_append(&server->ports, &self->ports);
 	return 1;
 }
 
 /*
  */
-int sancus_tcp_ipv4_port(struct sancus_tcp_port *self,
+int sancus_tcp_ipv4_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
 			 bool cloexec, void (*sockopts) (int))
 {
@@ -154,12 +157,13 @@ int sancus_tcp_ipv4_port(struct sancus_tcp_port *self,
 	if ((e = init_ipv4(&sin, addr, port)) != 1)
 		return e; /* 0 or -1, inet_pton() failed */
 
-	return init_tcp(self, (struct sockaddr *)&sin, sizeof(sin),
+	return init_tcp(self, server,
+			(struct sockaddr *)&sin, sizeof(sin),
 			cloexec, sockopts);
 }
 
 
-int sancus_tcp_ipv6_port(struct sancus_tcp_port *self,
+int sancus_tcp_ipv6_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
 			 bool cloexec, void (*sockopts) (int))
 {
@@ -169,11 +173,12 @@ int sancus_tcp_ipv6_port(struct sancus_tcp_port *self,
 	if ((e = init_ipv6(&sin6, addr, port)) != 1)
 		return e; /* 0 or -1, inet_pton() failed */
 
-	return init_tcp(self, (struct sockaddr *)&sin6, sizeof(sin6),
+	return init_tcp(self, server,
+			(struct sockaddr *)&sin6, sizeof(sin6),
 			cloexec, sockopts);
 }
 
-int sancus_tcp_local_port(struct sancus_tcp_port *self,
+int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 				 const char *path,
 				 bool cloexec, void (*sockopts) (int))
 {
@@ -184,7 +189,8 @@ int sancus_tcp_local_port(struct sancus_tcp_port *self,
 		return e; /* 0 or -1 */
 	unlink(path);
 
-	return init_tcp(self, (struct sockaddr *)&sun, SUN_LEN(&sun),
+	return init_tcp(self, server,
+			(struct sockaddr *)&sun, SUN_LEN(&sun),
 			cloexec, sockopts);
 }
 

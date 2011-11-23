@@ -47,16 +47,18 @@ void sancus_tcp_server_init(struct sancus_tcp_server *server);
  * tcp listening ports
  */
 struct sancus_tcp_port {
+	struct sancus_list ports;
+
 	ev_io connection_watcher;
 };
 
-int sancus_tcp_ipv4_port(struct sancus_tcp_port *self,
+int sancus_tcp_ipv4_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
 			 bool cloexec, void (*sockopts) (int));
-int sancus_tcp_ipv6_port(struct sancus_tcp_port *self,
+int sancus_tcp_ipv6_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
 			 bool cloexec, void (*sockopts) (int));
-int sancus_tcp_local_port(struct sancus_tcp_port *self,
+int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			  const char *path,
 			  bool cloexec, void (*sockopts) (int));
 
