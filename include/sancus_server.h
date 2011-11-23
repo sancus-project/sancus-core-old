@@ -29,10 +29,19 @@
 #ifndef _SANCUS_SERVER_H
 #define _SANCUS_SERVER_H
 
+/*
+ * tcp server
+ */
 enum sancus_tcp_server_error {
 	SANCUS_TCP_SERVER_WATCHER_ERROR,
 	SANCUS_TCP_SERVER_ACCEPT_ERROR,
 };
+struct sancus_tcp_server {
+	struct sancus_list ports;
+	struct sancus_list connections;
+};
+
+void sancus_tcp_server_init(struct sancus_tcp_server *server);
 
 /*
  * tcp listening ports

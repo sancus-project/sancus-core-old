@@ -36,8 +36,18 @@
 
 #include <ev.h>
 
+#include "sancus_list.h"
 #include "sancus_socket.h"
 #include "sancus_server.h"
+
+/*
+ * tcp server
+ */
+void sancus_tcp_server_init(struct sancus_tcp_server *server)
+{
+	sancus_list_init(&server->ports);
+	sancus_list_init(&server->connections);
+}
 
 /*
  */
@@ -128,6 +138,7 @@ static inline int init_tcp(struct sancus_tcp_port *self, struct sockaddr *sa, so
 
 	ev_io_init(&self->connection_watcher, connect_callback, fd, EV_READ);
 	self->connection_watcher.data = self;
+
 	return 1;
 }
 
