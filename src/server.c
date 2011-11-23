@@ -103,7 +103,7 @@ static inline int init_local(struct sockaddr_un *sun, const char *path)
 	return 1;
 }
 
-static inline int init_tcp(struct sancus_tcp_server *self, struct sockaddr *sa, socklen_t sa_len, bool cloexec)
+static inline int init_tcp(struct sancus_tcp_port *self, struct sockaddr *sa, socklen_t sa_len, bool cloexec)
 {
 	int fd = sancus_socket(sa->sa_family, SOCK_STREAM, cloexec, true);
 	if (fd < 0)
@@ -130,8 +130,8 @@ static inline int init_tcp(struct sancus_tcp_server *self, struct sockaddr *sa, 
 
 /*
  */
-int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, unsigned port,
-			   bool cloexec)
+int sancus_tcp_ipv4_port(struct sancus_tcp_port *self,
+			 const char *addr, unsigned port, bool cloexec)
 {
 	struct sockaddr_in sin = { .sin_family = AF_INET };
 	int e;
@@ -142,8 +142,10 @@ int sancus_tcp_ipv4_server(struct sancus_tcp_server *self, const char *addr, uns
 	return init_tcp(self, (struct sockaddr *)&sin, sizeof(sin), cloexec);
 }
 
-int sancus_tcp_ipv6_server(struct sancus_tcp_server *self, const char *addr, unsigned port,
-			   bool cloexec)
+
+int sancus_tcp_ipv6_port(struct sancus_tcp_port *self,
+			 const char *addr, unsigned port,
+			 bool cloexec)
 {
 	struct sockaddr_in6 sin6 = { .sin6_family = AF_INET6 };
 	int e;
@@ -154,7 +156,9 @@ int sancus_tcp_ipv6_server(struct sancus_tcp_server *self, const char *addr, uns
 	return init_tcp(self, (struct sockaddr *)&sin6, sizeof(sin6), cloexec);
 }
 
-int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bool cloexec)
+int sancus_tcp_local_port(struct sancus_tcp_port *self,
+				 const char *path,
+				 bool cloexec)
 {
 	struct sockaddr_un sun = { .sun_family = AF_LOCAL };
 	int e;
@@ -166,17 +170,17 @@ int sancus_tcp_local_server(struct sancus_tcp_server *self, const char *path, bo
 	return init_tcp(self, (struct sockaddr *)&sun, SUN_LEN(&sun), cloexec);
 }
 
-int sancus_tcp_server_listen(struct sancus_tcp_server *self, unsigned backlog)
+int sancus_tcp_port_listen(struct sancus_tcp_port *self, unsigned backlog)
 {
 	return listen(self->connection_watcher.fd, backlog);
 }
 
-void sancus_tcp_server_start(struct sancus_tcp_server *self, struct ev_loop *loop)
+void sancus_tcp_start(struct sancus_tcp_port *self, struct ev_loop *loop)
 {
 	ev_io_start(loop, &self->connection_watcher);
 }
 
-void sancus_tcp_server_stop(struct sancus_tcp_server *self, struct ev_loop *loop)
+void sancus_tcp_stop(struct sancus_tcp_port *self, struct ev_loop *loop)
 {
 	ev_io_stop(loop, &self->connection_watcher);
 }
