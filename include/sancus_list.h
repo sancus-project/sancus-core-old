@@ -49,7 +49,7 @@ static inline void sancus_list_inject(struct sancus_list *self, struct sancus_li
 	prev->next = self;
 }
 #define sancus_list_insert(H, N)	sancus_list_inject(N, (H), (H)->next)
-#define sancs_list_append(H, N)		sancus_list_inject(N, (H)->prev, (H))
+#define sancus_list_append(H, N)	sancus_list_inject(N, (H)->prev, (H))
 
 static inline void __sancus_list_del(struct sancus_list *prev, struct sancus_list *next)
 {
