@@ -42,7 +42,8 @@ enum sancus_log_level {
 };
 
 void sancus_log_write(enum sancus_log_level level, const char *name, const char *str);
-void sancus_log_writef(enum sancus_log_level level, const char *name, const char *fmt, ...);
+void sancus_log_writef(enum sancus_log_level level, const char *name, const char *fmt, ...)
+		       TYPECHECK_PRINTF(3, 4);
 
 #define _err(L, S)	sancus_log_write(L, LOG_PREFIX, S)
 #define _errf(L, ...)	sancus_log_writef(L, LOG_PREFIX, __VA_ARGS__)
@@ -52,7 +53,8 @@ void sancus_log_trace(enum sancus_log_level level, const char *name,
 		      const char *str);
 void sancus_log_tracef(enum sancus_log_level level, const char *name,
 		       const char *file, unsigned line, const char *func,
-		       const char *fmt, ...);
+		       const char *fmt, ...)
+		       TYPECHECK_PRINTF(6, 7);
 
 #define _trace(L, S)	sancus_log_trace(L, LOG_PREFIX, __FILE__, __LINE__, __func__, S)
 #define _tracef(L, ...)	sancus_log_tracef(L, LOG_PREFIX, __FILE__, __LINE__, __func__, __VA_ARGS__)
