@@ -80,15 +80,15 @@ static inline ssize_t _write(enum sancus_log_level level, const char *name,
 	level_s[1] += level;
 	v[l++] = (struct iovec) { level_s, 4 };
 
-	/* "trace_str" */
-	if (trace_str && trace_str[0]) {
-		v[l++] = (struct iovec) { (void*)trace_str, (size_t)strlen(trace_str) };
-	}
-
 	/* "name: " */
 	if ((l2 = strlen_trimmed(name)) > 0) {
 		v[l++] = (struct iovec) { (void*)name, l2 };
 		v[l++] = (struct iovec) { ": ", 2 };
+	}
+
+	/* "trace_str" */
+	if (trace_str && trace_str[0]) {
+		v[l++] = (struct iovec) { (void*)trace_str, (size_t)strlen(trace_str) };
 	}
 
 	/* "str" */
