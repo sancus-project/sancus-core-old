@@ -29,6 +29,7 @@
 #ifndef _SANCUS_FD_H
 #define _SANCUS_FD_H
 
+#ifdef _FCNTL_H
 static inline int sancus_open(const char *pathname, int flags, int cloexec, mode_t mode)
 {
 	int fd;
@@ -65,6 +66,7 @@ open_failed:
 open_done:
 	return fd;
 }
+#endif /* _FCNTL_H */
 
 static inline int sancus_close(int *fd)
 {
