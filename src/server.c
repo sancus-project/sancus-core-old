@@ -29,6 +29,7 @@
 
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -39,6 +40,9 @@
 #include "sancus_list.h"
 #include "sancus_socket.h"
 #include "sancus_server.h"
+
+#include "sancus_common.h"
+#include "sancus_fd.h"
 
 /*
  * tcp server
@@ -60,7 +64,7 @@ static void connect_callback(struct ev_loop *loop, ev_io *w, int revents)
 		int fd = accept(w->fd, (struct sockaddr *)&addr, &addrlen);
 
 		if (fd >= 0)
-			close(fd);
+			sancus_close(&fd);
 	}
 
 	(void)loop;
@@ -133,7 +137,9 @@ static inline int init_tcp(struct sancus_tcp_port *self, struct sancus_tcp_serve
 		sockopts(fd);
 
 	if (bind(fd, sa, sa_len) < 0) {
-		close(fd);
+		int e = errno;
+		sancus_close(&fd);
+		errno = e;
 		return -1;
 	}
 
@@ -197,6 +203,14 @@ int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server
 int sancus_tcp_port_listen(struct sancus_tcp_port *self, unsigned backlog)
 {
 	return listen(self->connection_watcher.fd, backlog);
+}
+
+void sancus_tcp_port_close(struct sancus_tcp_port *self)
+{
+	int fd = self->connection_watcher.fd;
+
+	sancus_close(&fd);
+	sancus_list_del(&self->ports);
 }
 
 void sancus_tcp_start(struct sancus_tcp_port *self, struct ev_loop *loop)

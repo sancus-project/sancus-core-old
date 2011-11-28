@@ -63,6 +63,8 @@ int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server
 			  bool cloexec, void (*sockopts) (int));
 
 int sancus_tcp_port_listen(struct sancus_tcp_port *self, unsigned backlog);
+void sancus_tcp_port_close(struct sancus_tcp_port *self);
+
 void sancus_tcp_port_start(struct sancus_tcp_port *self, struct ev_loop *loop);
 void sancus_tcp_port_stop(struct sancus_tcp_port *self, struct ev_loop *loop);
 
