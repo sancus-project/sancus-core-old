@@ -39,6 +39,8 @@ enum sancus_tcp_server_error {
 struct sancus_tcp_server {
 	struct sancus_list ports;
 	struct sancus_list connections;
+
+	void (*port_sockopts) (int);
 };
 
 void sancus_tcp_server_init(struct sancus_tcp_server *server);
@@ -54,13 +56,13 @@ struct sancus_tcp_port {
 
 int sancus_tcp_ipv4_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
-			 bool cloexec, void (*sockopts) (int));
+			 bool cloexec);
 int sancus_tcp_ipv6_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
-			 bool cloexec, void (*sockopts) (int));
+			 bool cloexec);
 int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			  const char *path,
-			  bool cloexec, void (*sockopts) (int));
+			  bool cloexec);
 
 int sancus_tcp_port_listen(struct sancus_tcp_port *self, unsigned backlog);
 void sancus_tcp_port_close(struct sancus_tcp_port *self);
