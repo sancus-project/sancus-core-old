@@ -54,6 +54,7 @@ void sancus_tcp_server_start(struct sancus_tcp_server *server, struct ev_loop *l
  * tcp listening ports
  */
 struct sancus_tcp_port {
+	struct sancus_tcp_server *server;
 	struct sancus_list ports;
 
 	ev_io connection_watcher;

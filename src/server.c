@@ -176,6 +176,8 @@ static inline int init_tcp(struct sancus_tcp_port *self, struct sancus_tcp_serve
 		return -1;
 	}
 
+	self->server = server;
+
 	ev_io_init(&self->connection_watcher, connect_callback, fd, EV_READ);
 	self->connection_watcher.data = self;
 
