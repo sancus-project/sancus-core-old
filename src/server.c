@@ -27,9 +27,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <errno.h>
+
+#include <stddef.h>	/* offsetof */
 
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -44,6 +47,9 @@
 #include "sancus_common.h"
 #include "sancus_fd.h"
 
+static inline void sancus_tcp_port_start(struct sancus_tcp_port *self, struct ev_loop *loop);
+static inline void sancus_tcp_port_stop(struct sancus_tcp_port *self, struct ev_loop *loop);
+
 /*
  * tcp server
  */
@@ -52,7 +58,31 @@ void sancus_tcp_server_init(struct sancus_tcp_server *server)
 	sancus_list_init(&server->ports);
 	sancus_list_init(&server->connections);
 
+	server->loop = NULL;
 	server->port_sockopts = NULL;
+}
+
+void sancus_tcp_server_start(struct sancus_tcp_server *server, struct ev_loop *loop)
+{
+	assert(server->loop == NULL);
+	server->loop = loop;
+
+	sancus_list_foreach(&server->ports, item) {
+		struct sancus_tcp_port *port = container_of(item, struct sancus_tcp_port, ports);
+
+		sancus_tcp_port_start(port, loop);
+	}
+}
+
+void sancus_tcp_server_close(struct sancus_tcp_server *server)
+{
+	sancus_list_foreach2(&server->ports, item, next) {
+		struct sancus_tcp_port *port = container_of(item, struct sancus_tcp_port, ports);
+
+		if (server->loop)
+			sancus_tcp_port_stop(port, server->loop);
+		sancus_tcp_port_close(port);
+	}
 }
 
 /*
@@ -151,6 +181,9 @@ static inline int init_tcp(struct sancus_tcp_port *self, struct sancus_tcp_serve
 
 	sancus_list_init(&self->ports);
 	sancus_list_append(&server->ports, &self->ports);
+
+	if (server->loop)
+		sancus_tcp_port_start(self, server->loop);
 	return 1;
 }
 
@@ -211,12 +244,12 @@ void sancus_tcp_port_close(struct sancus_tcp_port *self)
 	sancus_list_del(&self->ports);
 }
 
-void sancus_tcp_start(struct sancus_tcp_port *self, struct ev_loop *loop)
+static inline void sancus_tcp_port_start(struct sancus_tcp_port *self, struct ev_loop *loop)
 {
 	ev_io_start(loop, &self->connection_watcher);
 }
 
-void sancus_tcp_stop(struct sancus_tcp_port *self, struct ev_loop *loop)
+static inline void sancus_tcp_port_stop(struct sancus_tcp_port *self, struct ev_loop *loop)
 {
 	ev_io_stop(loop, &self->connection_watcher);
 }

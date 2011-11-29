@@ -37,6 +37,8 @@ enum sancus_tcp_server_error {
 	SANCUS_TCP_SERVER_ACCEPT_ERROR,
 };
 struct sancus_tcp_server {
+	struct ev_loop *loop;
+
 	struct sancus_list ports;
 	struct sancus_list connections;
 
@@ -44,6 +46,9 @@ struct sancus_tcp_server {
 };
 
 void sancus_tcp_server_init(struct sancus_tcp_server *server);
+void sancus_tcp_server_close(struct sancus_tcp_server *server);
+
+void sancus_tcp_server_start(struct sancus_tcp_server *server, struct ev_loop *loop);
 
 /*
  * tcp listening ports
@@ -65,8 +70,5 @@ int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server
 			  bool cloexec, unsigned backlog);
 
 void sancus_tcp_port_close(struct sancus_tcp_port *self);
-
-void sancus_tcp_port_start(struct sancus_tcp_port *self, struct ev_loop *loop);
-void sancus_tcp_port_stop(struct sancus_tcp_port *self, struct ev_loop *loop);
 
 #endif /* !_SANCUS_SERVER_H */
