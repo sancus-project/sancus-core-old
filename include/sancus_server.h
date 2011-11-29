@@ -56,15 +56,14 @@ struct sancus_tcp_port {
 
 int sancus_tcp_ipv4_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
-			 bool cloexec);
+			 bool cloexec, unsigned backlog);
 int sancus_tcp_ipv6_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			 const char *addr, unsigned port,
-			 bool cloexec);
+			 bool cloexec, unsigned backlog);
 int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
 			  const char *path,
-			  bool cloexec);
+			  bool cloexec, unsigned backlog);
 
-int sancus_tcp_port_listen(struct sancus_tcp_port *self, unsigned backlog);
 void sancus_tcp_port_close(struct sancus_tcp_port *self);
 
 void sancus_tcp_port_start(struct sancus_tcp_port *self, struct ev_loop *loop);
