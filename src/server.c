@@ -166,7 +166,7 @@ static inline int init_tcp(struct sancus_tcp_port *self, struct sancus_tcp_serve
 		setsockopt(fd, SOL_SOCKET, SO_LINGER, (void*)&ling, sizeof(ling));
 	}
 	if (server->port_sockopts)
-		server->port_sockopts(fd);
+		server->port_sockopts(server, fd);
 
 	if (bind(fd, sa, sa_len) < 0 ||
 	    listen(fd, backlog) < 0) {

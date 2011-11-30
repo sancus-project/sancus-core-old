@@ -42,7 +42,7 @@ struct sancus_tcp_server {
 	struct sancus_list ports;
 	struct sancus_list connections;
 
-	void (*port_sockopts) (int);
+	void (*port_sockopts) (struct sancus_tcp_server *, int);
 };
 
 void sancus_tcp_server_init(struct sancus_tcp_server *server);
