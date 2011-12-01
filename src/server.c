@@ -47,6 +47,8 @@
 #include "sancus_common.h"
 #include "sancus_fd.h"
 
+#include "server_connection.h"
+
 static inline void sancus_tcp_port_start(struct sancus_tcp_port *self, struct ev_loop *loop);
 static inline void sancus_tcp_port_stop(struct sancus_tcp_port *self, struct ev_loop *loop);
 
@@ -64,6 +66,8 @@ void sancus_tcp_server_init(struct sancus_tcp_server *server)
 void sancus_tcp_server_start(struct sancus_tcp_server *server, struct ev_loop *loop)
 {
 	assert(server->loop == NULL);
+	assert(server->on_connect);
+
 	server->loop = loop;
 
 	sancus_list_foreach(&server->ports, item) {
@@ -88,17 +92,30 @@ void sancus_tcp_server_close(struct sancus_tcp_server *server)
  */
 static void connect_callback(struct ev_loop *loop, ev_io *w, int revents)
 {
+	struct sancus_tcp_port *port = w->data;
+	struct sancus_tcp_server *server = port->server;
+	struct sancus_tcp_server_connection *conn;
+
+	assert(server && server->loop == loop);
+
 	if (revents & EV_READ) {
 		struct sockaddr_storage addr;
 		socklen_t addrlen = sizeof(addr);
 
 		int fd = accept(w->fd, (struct sockaddr *)&addr, &addrlen);
 
-		if (fd >= 0)
+		if (fd >= 0) {
+			conn = server->on_connect(server, fd,
+						  (struct sockaddr *)&addr,
+						  addrlen);
+			if (conn) {
+				sancus_tcp_server_connection_prepare(conn, server, fd);
+				sancus_tcp_server_connection_start(conn, loop);
+				return;
+			}
 			sancus_close(&fd);
+		}
 	}
-
-	(void)loop;
 }
 
 /*

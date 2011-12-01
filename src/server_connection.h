@@ -26,66 +26,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _SANCUS_SERVER_H
-#define _SANCUS_SERVER_H
+#ifndef _SANCUS_SERVER_CONNECTION_H
+#define _SANCUS_SERVER_CONNECTION_H
 
-struct sockaddr;
+void sancus_tcp_server_connection_prepare(struct sancus_tcp_server_connection *conn,
+					  struct sancus_tcp_server *server,
+					  int fd);
 
-/*
- * tcp server
- */
-enum sancus_tcp_server_error {
-	SANCUS_TCP_SERVER_WATCHER_ERROR,
-	SANCUS_TCP_SERVER_ACCEPT_ERROR,
-};
+void sancus_tcp_server_connection_start(struct sancus_tcp_server_connection *self,
+					struct ev_loop *loop);
 
-struct sancus_tcp_server {
-	struct ev_loop *loop;
-
-	struct sancus_list ports;
-	struct sancus_list connections;
-
-	void (*port_sockopts) (struct sancus_tcp_server *, int);
-
-	struct sancus_tcp_server_connection *(*on_connect) (struct sancus_tcp_server *, int,
-						     struct sockaddr *, size_t);
-};
-
-void sancus_tcp_server_init(struct sancus_tcp_server *server);
-void sancus_tcp_server_close(struct sancus_tcp_server *server);
-
-void sancus_tcp_server_start(struct sancus_tcp_server *server, struct ev_loop *loop);
-
-/*
- * tcp listening ports
- */
-struct sancus_tcp_port {
-	struct sancus_tcp_server *server;
-	struct sancus_list ports;
-
-	ev_io connection_watcher;
-};
-
-int sancus_tcp_ipv4_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
-			 const char *addr, unsigned port,
-			 bool cloexec, unsigned backlog);
-int sancus_tcp_ipv6_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
-			 const char *addr, unsigned port,
-			 bool cloexec, unsigned backlog);
-int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
-			  const char *path,
-			  bool cloexec, unsigned backlog);
-
-void sancus_tcp_port_close(struct sancus_tcp_port *self);
-
-/*
- * tcp connection (remote client)
- */
-struct sancus_tcp_server_connection {
-	struct sancus_tcp_server *server;
-	struct sancus_list connections;
-
-	ev_io w;
-};
-
-#endif /* !_SANCUS_SERVER_H */
+#endif /* ! _SANCUS_SERVER_CONNECTION_H */

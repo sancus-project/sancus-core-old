@@ -26,66 +26,68 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _SANCUS_SERVER_H
-#define _SANCUS_SERVER_H
 
-struct sockaddr;
+#include <assert.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <errno.h>
 
-/*
- * tcp server
- */
-enum sancus_tcp_server_error {
-	SANCUS_TCP_SERVER_WATCHER_ERROR,
-	SANCUS_TCP_SERVER_ACCEPT_ERROR,
-};
+#include <ev.h>
 
-struct sancus_tcp_server {
-	struct ev_loop *loop;
+#include "sancus_list.h"
+#include "sancus_server.h"
 
-	struct sancus_list ports;
-	struct sancus_list connections;
-
-	void (*port_sockopts) (struct sancus_tcp_server *, int);
-
-	struct sancus_tcp_server_connection *(*on_connect) (struct sancus_tcp_server *, int,
-						     struct sockaddr *, size_t);
-};
-
-void sancus_tcp_server_init(struct sancus_tcp_server *server);
-void sancus_tcp_server_close(struct sancus_tcp_server *server);
-
-void sancus_tcp_server_start(struct sancus_tcp_server *server, struct ev_loop *loop);
+#include "server_connection.h"
 
 /*
- * tcp listening ports
  */
-struct sancus_tcp_port {
-	struct sancus_tcp_server *server;
-	struct sancus_list ports;
-
-	ev_io connection_watcher;
-};
-
-int sancus_tcp_ipv4_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
-			 const char *addr, unsigned port,
-			 bool cloexec, unsigned backlog);
-int sancus_tcp_ipv6_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
-			 const char *addr, unsigned port,
-			 bool cloexec, unsigned backlog);
-int sancus_tcp_local_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
-			  const char *path,
-			  bool cloexec, unsigned backlog);
-
-void sancus_tcp_port_close(struct sancus_tcp_port *self);
+static inline ssize_t _read(int fd, char *buf, size_t buf_len)
+{
+	ssize_t rc;
+try_read:
+	rc = read(fd, buf, buf_len);
+	if (rc < 0 && errno == EINTR)
+		goto try_read;
+	return rc;
+}
 
 /*
- * tcp connection (remote client)
  */
-struct sancus_tcp_server_connection {
-	struct sancus_tcp_server *server;
-	struct sancus_list connections;
+static void read_callback(struct ev_loop *loop, ev_io *w, int revents)
+{
+	struct sancus_tcp_server_connection *self = w->data;
+	struct sancus_tcp_server *server = self->server;
 
-	ev_io w;
-};
+	assert(server && server->loop == loop);
 
-#endif /* !_SANCUS_SERVER_H */
+	if (revents & EV_READ) {
+		char buf[4096];
+		ssize_t rc = _read(w->fd, buf, sizeof(buf));
+
+		if (rc > 0) {
+			/* goto data */
+		} else if (rc == 0) {
+			/* EOF */
+		} else {
+			/* error */
+		}
+	}
+}
+
+void sancus_tcp_server_connection_prepare(struct sancus_tcp_server_connection *self,
+				   struct sancus_tcp_server *server,
+				   int fd)
+{
+	self->server = server;
+
+	ev_io_init(&self->w, read_callback, fd, EV_READ);
+	self->w.data = self;
+
+	sancus_list_init(&self->connections);
+	sancus_list_append(&server->connections, &self->connections);
+}
+
+void sancus_tcp_server_connection_start(struct sancus_tcp_server_connection *self, struct ev_loop *loop)
+{
+	ev_io_start(loop, &self->w);
+}
