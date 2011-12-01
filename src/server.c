@@ -55,11 +55,10 @@ static inline void sancus_tcp_port_stop(struct sancus_tcp_port *self, struct ev_
  */
 void sancus_tcp_server_init(struct sancus_tcp_server *server)
 {
+	*server = (struct sancus_tcp_server) { .loop = NULL }; /* zero */
+
 	sancus_list_init(&server->ports);
 	sancus_list_init(&server->connections);
-
-	server->loop = NULL;
-	server->port_sockopts = NULL;
 }
 
 void sancus_tcp_server_start(struct sancus_tcp_server *server, struct ev_loop *loop)
