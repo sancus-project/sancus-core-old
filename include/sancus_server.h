@@ -63,7 +63,7 @@ struct sancus_tcp_port {
 	struct sancus_tcp_server *server;
 	struct sancus_list ports;
 
-	ev_io connection_watcher;
+	ev_io w;
 };
 
 int sancus_tcp_ipv4_port(struct sancus_tcp_port *self, struct sancus_tcp_server *server,

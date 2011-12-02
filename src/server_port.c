@@ -79,8 +79,8 @@ void sancus_tcp_port_prepare(struct sancus_tcp_port *self, struct sancus_tcp_ser
 {
 	self->server = server;
 
-	ev_io_init(&self->connection_watcher, connect_callback, fd, EV_READ);
-	self->connection_watcher.data = self;
+	ev_io_init(&self->w, connect_callback, fd, EV_READ);
+	self->w.data = self;
 
 	sancus_list_init(&self->ports);
 	sancus_list_append(&server->ports, &self->ports);
@@ -91,7 +91,7 @@ void sancus_tcp_port_prepare(struct sancus_tcp_port *self, struct sancus_tcp_ser
 
 void sancus_tcp_port_close(struct sancus_tcp_port *self)
 {
-	int fd = self->connection_watcher.fd;
+	int fd = self->w.fd;
 
 	sancus_close(&fd);
 	sancus_list_del(&self->ports);

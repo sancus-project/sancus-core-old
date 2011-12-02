@@ -31,12 +31,12 @@
 
 static inline void sancus_tcp_port_start(struct sancus_tcp_port *self, struct ev_loop *loop)
 {
-	ev_io_start(loop, &self->connection_watcher);
+	ev_io_start(loop, &self->w);
 }
 
 static inline void sancus_tcp_port_stop(struct sancus_tcp_port *self, struct ev_loop *loop)
 {
-	ev_io_stop(loop, &self->connection_watcher);
+	ev_io_stop(loop, &self->w);
 }
 
 void sancus_tcp_port_prepare(struct sancus_tcp_port *self, struct sancus_tcp_server *server,
