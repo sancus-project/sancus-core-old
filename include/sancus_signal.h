@@ -29,4 +29,16 @@
 #ifndef _SANCUS_SIGNAL_H
 #define _SANCUS_SIGNAL_H
 
+struct sancus_signal_watcher {
+	struct sancus_state *state;
+	struct sancus_list watchers;
+	struct sancus_list handlers;
+
+	ev_signal w;
+};
+
+int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
+			      struct sancus_state *state,
+			      int signum);
+
 #endif /* !_SANCUS_SIGNAL_H */

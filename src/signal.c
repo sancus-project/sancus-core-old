@@ -27,4 +27,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <assert.h>
+
+#include <ev.h>
+#include "sancus.h"
+
+#include "sancus_list.h"
+#include "sancus_state.h"
 #include "sancus_signal.h"
+
+/*
+ */
+static void signal_callback(struct ev_loop *loop, ev_signal *w, int revents)
+{
+	(void)loop;
+	(void)w;
+	(void)revents;
+}
+
+/*
+ * Exported
+ */
+int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
+			      struct sancus_state *state,
+			      int signum)
+{
+	assert(self);
+	assert(state);
+	assert(signum > 0 && signum <= 32);
+
+	self->state = state;
+
+	ev_signal_init(&self->w, signal_callback, signum);
+	self->w.data = self;
+
+	sancus_list_init(&self->handlers);
+
+	sancus_list_init(&self->watchers);
+	sancus_list_append(&state->signal_watchers, &self->watchers);
+
+	return 1;
+}
