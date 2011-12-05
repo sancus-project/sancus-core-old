@@ -35,6 +35,7 @@ struct sancus_signal_watcher {
 	struct sancus_list handlers;
 
 	ev_signal w;
+	int (*h) (struct sancus_state *, int signum);
 };
 
 struct sancus_signal_handler {
@@ -43,9 +44,11 @@ struct sancus_signal_handler {
 	int (*h) (struct sancus_state *, int signum);
 };
 
-int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
-			      struct sancus_state *state,
-			      int signum);
+#define sancus_signal_watcher_add(W,S,N)	sancus_signal_watcher_add2(W,S,N,(void*)0)
+int sancus_signal_watcher_add2(struct sancus_signal_watcher *self,
+			       struct sancus_state *state,
+			       int signum,
+			       int (*h) (struct sancus_state *, int signum));
 int sancus_signal_handler_add(struct sancus_signal_handler *self,
 			      struct sancus_state *state,
 			      int signum,

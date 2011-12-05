@@ -43,8 +43,15 @@
  */
 static void signal_callback(struct ev_loop *loop, ev_signal *w, int revents)
 {
+	struct sancus_signal_watcher *watcher = w->data;
+	struct sancus_state *state = watcher->state;
+
+	assert(state->loop == loop);
+
+	if (watcher->h)
+		watcher->h(state, w->signum);
+
 	(void)loop;
-	(void)w;
 	(void)revents;
 }
 
@@ -63,9 +70,10 @@ static inline struct sancus_signal_watcher *_find_watcher(struct sancus_state *s
 /*
  * Exported
  */
-int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
-			      struct sancus_state *state,
-			      int signum)
+int sancus_signal_watcher_add2(struct sancus_signal_watcher *self,
+			       struct sancus_state *state,
+			       int signum,
+			       int (*h) (struct sancus_state *, int signum))
 {
 	assert(self);
 	assert(state);
@@ -75,6 +83,7 @@ int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
 		return 0;
 
 	self->state = state;
+	self->h = h;
 
 	ev_signal_init(&self->w, signal_callback, signum);
 	self->w.data = self;
