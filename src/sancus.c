@@ -34,8 +34,22 @@
 #include "sancus.h"
 #include "sancus_list.h"
 #include "sancus_state.h"
+#include "sancus_signal.h"
 
 static struct sancus_state default_state;
+static struct sancus_signal_watcher default_signal_watchers[2];
+
+/*
+ */
+int _stop(struct sancus_state *s, int signum)
+{
+	assert(s == &default_state);
+
+	(void)s;
+	(void)signum;
+
+	return 1;
+}
 
 /*
  * Default State
@@ -43,8 +57,13 @@ static struct sancus_state default_state;
 SancusState sancus_init(void)
 {
 	SancusState s = &default_state;
-	if (!s->loop)
+	if (!s->loop) {
 		sancus_state_init(s, ev_default_loop(0));
+		sancus_signal_watcher_add2(&default_signal_watchers[0], s,
+					   SIGINT, _stop);
+		sancus_signal_watcher_add2(&default_signal_watchers[1], s,
+					   SIGTERM, _stop);
+	}
 
 	return s;
 }
