@@ -1,5 +1,5 @@
 /*
- * This file is part of sancus-core <http://github.com/amery/sancus-core>>
+ * This file is part of sancus-core <http://github.com/amery/sancus-core>
  *
  * Copyright (c) 2011, Alejandro Mery <amery@geeks.cl>
  * All rights reserved.
@@ -26,17 +26,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifndef _SANCUS_STATE_H
+#define _SANCUS_STATE_H
 
-#include <ev.h>
-
-#include "sancus.h"
-#include "sancus_list.h"
-
-/*
- * types
- */
 struct sancus_state {
 	struct ev_loop *loop;
 
 	struct sancus_list signal_watchers;
 };
+
+void sancus_state_init(struct sancus_state *, struct ev_loop *);
+void sancus_state_finish(struct sancus_state *);
+
+void sancus_state_run(struct sancus_state *);
+
+#endif /* !_SANCUS_STATE_H */
