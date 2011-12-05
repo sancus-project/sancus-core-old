@@ -78,6 +78,7 @@ int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
 
 	ev_signal_init(&self->w, signal_callback, signum);
 	self->w.data = self;
+	ev_signal_start(state->loop, &self->w);
 
 	sancus_list_init(&self->handlers);
 
