@@ -28,10 +28,13 @@
  */
 
 #include <assert.h>
+#include <stddef.h>	/* offsetof */
+#include <stdlib.h>	/* NULL */
 
 #include <ev.h>
 #include "sancus.h"
 
+#include "sancus_common.h"
 #include "sancus_list.h"
 #include "sancus_state.h"
 #include "sancus_signal.h"
@@ -45,6 +48,18 @@ static void signal_callback(struct ev_loop *loop, ev_signal *w, int revents)
 	(void)revents;
 }
 
+static inline struct sancus_signal_watcher *_find_watcher(struct sancus_state *state,
+							  int signum)
+{
+	sancus_list_foreach(&state->signal_watchers, item) {
+		struct sancus_signal_watcher *watcher = container_of(item, struct sancus_signal_watcher,
+								     watchers);
+		if (watcher->w.signum == signum)
+			return watcher;
+	}
+	return NULL;
+}
+
 /*
  * Exported
  */
@@ -55,6 +70,9 @@ int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
 	assert(self);
 	assert(state);
 	assert(signum > 0 && signum <= 32);
+
+	if (_find_watcher(state, signum))
+		return 0;
 
 	self->state = state;
 
@@ -67,4 +85,37 @@ int sancus_signal_watcher_add(struct sancus_signal_watcher *self,
 	sancus_list_append(&state->signal_watchers, &self->watchers);
 
 	return 1;
+}
+
+int sancus_signal_handler_add(struct sancus_signal_handler *self,
+			      struct sancus_state *state,
+			      int signum,
+			      int (*h) (struct sancus_state *, int signum))
+{
+	struct sancus_signal_watcher *watcher;
+
+	assert(self);
+	assert(state);
+	assert(signum > 0 && signum <= 32);
+	assert(h);
+
+	watcher = _find_watcher(state, signum);
+	if (watcher)
+		return sancus_signal_handler_add2(self, watcher, h);
+	return 0;
+}
+
+int sancus_signal_handler_add2(struct sancus_signal_handler *self,
+			       struct sancus_signal_watcher *watcher,
+			       int (*h) (struct sancus_state *, int signum))
+{
+	assert(self);
+	assert(watcher);
+	assert(h);
+
+	self->h = h;
+
+	sancus_list_init(&self->handlers);
+	sancus_list_append(&watcher->handlers, &self->handlers);
+	return 0;
 }
