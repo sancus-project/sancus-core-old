@@ -48,6 +48,12 @@ static void signal_callback(struct ev_loop *loop, ev_signal *w, int revents)
 
 	assert(state->loop == loop);
 
+	sancus_list_foreach2(&watcher->handlers, item, next) {
+		struct sancus_signal_handler *h = container_of(item, struct sancus_signal_handler,
+								     handlers);
+		h->h(state, w->signum);
+	}
+
 	if (watcher->h)
 		watcher->h(state, w->signum);
 
