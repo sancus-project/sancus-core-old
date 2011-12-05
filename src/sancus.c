@@ -29,6 +29,8 @@
 
 #include <assert.h>
 
+#include <ev.h>
+
 #include "sancus.h"
 #include "sancus_list.h"
 #include "sancus_state.h"
