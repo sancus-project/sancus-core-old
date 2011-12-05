@@ -36,8 +36,6 @@
 #include "sancus_list.h"
 #include "sancus_state.h"
 
-static struct sancus_state default_state;
-
 /*
  * helpers
  */
@@ -57,32 +55,4 @@ void sancus_state_run(SancusState s)
 {
 	assert(s);
 	ev_run(s->loop, 0);
-}
-
-/*
- * Default State
- */
-SancusState sancus_init(void)
-{
-	SancusState s = &default_state;
-	if (!s->loop)
-		sancus_state_init(s, ev_default_loop(0));
-
-	return s;
-}
-
-SancusState sancus_default_state(void)
-{
-	assert(default_state.loop);
-	return &default_state;
-}
-
-void sancus_finish(void)
-{
-	/* NOP */
-}
-
-void sancus_run(void)
-{
-	sancus_state_run(&default_state);
 }
