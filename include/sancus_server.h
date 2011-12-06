@@ -42,6 +42,7 @@ enum sancus_tcp_server_error {
 struct sancus_tcp_server {
 	struct ev_loop *loop;
 
+	struct sancus_list servers;
 	struct sancus_list ports;
 	struct sancus_list connections;
 

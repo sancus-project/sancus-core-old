@@ -57,6 +57,7 @@ void sancus_tcp_server_init(struct sancus_tcp_server *server)
 {
 	*server = (struct sancus_tcp_server) { .loop = NULL }; /* zero */
 
+	sancus_list_init(&server->servers);
 	sancus_list_init(&server->ports);
 	sancus_list_init(&server->connections);
 }
