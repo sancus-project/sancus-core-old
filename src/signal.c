@@ -74,7 +74,7 @@ static inline struct sancus_signal_watcher *_find_watcher(struct sancus_state *s
 }
 
 /*
- * Exported
+ * Watcher
  */
 int sancus_signal_watcher_add2(struct sancus_signal_watcher *self,
 			       struct sancus_state *state,
@@ -85,22 +85,33 @@ int sancus_signal_watcher_add2(struct sancus_signal_watcher *self,
 	assert(state);
 	assert(signum > 0 && signum <= 32);
 
-	if (_find_watcher(state, signum))
-		return 0;
-
-	self->state = state;
-	self->h = h;
+	/* first initialize watcher, for future sanity */
+	*self = (struct sancus_signal_watcher) { .state = state, .h = h };
 
 	ev_signal_init(&self->w, signal_callback, signum);
 	self->w.data = self;
-	ev_signal_start(state->loop, &self->w);
 
 	sancus_list_init(&self->handlers);
-
 	sancus_list_init(&self->watchers);
+
+	/* activate if it's the first */
+	if (_find_watcher(state, signum))
+		return 0;
+
+	ev_signal_start(state->loop, &self->w);
 	sancus_list_append(&state->signal_watchers, &self->watchers);
 
 	return 1;
+}
+
+/*
+ * Handler
+ */
+static inline void _handler_init(struct sancus_signal_handler *self,
+			      int (*h) (struct sancus_state *, int signum))
+{
+	*self = (struct sancus_signal_handler) { .h = h };
+	sancus_list_init(&self->handlers);
 }
 
 int sancus_signal_handler_add(struct sancus_signal_handler *self,
@@ -118,6 +129,9 @@ int sancus_signal_handler_add(struct sancus_signal_handler *self,
 	watcher = _find_watcher(state, signum);
 	if (watcher)
 		return sancus_signal_handler_add2(self, watcher, h);
+
+	/* leave it initialized, for sanity */
+	_handler_init(self, h);
 	return 0;
 }
 
@@ -129,9 +143,11 @@ int sancus_signal_handler_add2(struct sancus_signal_handler *self,
 	assert(watcher);
 	assert(h);
 
-	self->h = h;
+	/* initialize */
+	_handler_init(self, h);
+	*self = (struct sancus_signal_handler) { .h = h };
 
-	sancus_list_init(&self->handlers);
+	/* and hook */
 	sancus_list_append(&watcher->handlers, &self->handlers);
 	return 0;
 }
