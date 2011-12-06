@@ -36,7 +36,7 @@ struct sancus_state {
 };
 
 void sancus_state_init(struct sancus_state *, struct ev_loop *);
-void sancus_state_finish(struct sancus_state *);
+void sancus_state_close(struct sancus_state *);
 
 void sancus_state_run(struct sancus_state *);
 

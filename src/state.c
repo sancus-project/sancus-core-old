@@ -28,13 +28,16 @@
  */
 
 #include <assert.h>
+#include <stddef.h>	/* offsetof */
 
 #include <ev.h>
 
 #include "sancus.h"
 
+#include "sancus_common.h"
 #include "sancus_list.h"
 #include "sancus_state.h"
+#include "sancus_signal.h"
 
 /*
  * helpers
@@ -49,6 +52,19 @@ void sancus_state_init(SancusState s, struct ev_loop *loop)
 
 	s->loop = loop;
 	sancus_list_init(&s->signal_watchers);
+}
+
+void sancus_state_close(struct sancus_state *self)
+{
+	assert(self);
+
+	/* close all signal watchers */
+	sancus_list_foreach(&self->signal_watchers, item) {
+		struct sancus_signal_watcher *watcher;
+		watcher = container_of(item, struct sancus_signal_watcher, watchers);
+
+		sancus_signal_watcher_close(watcher);
+	}
 }
 
 void sancus_state_run(SancusState s)
