@@ -104,6 +104,16 @@ int sancus_signal_watcher_add2(struct sancus_signal_watcher *self,
 	return 1;
 }
 
+void sancus_signal_watcher_close(struct sancus_signal_watcher *self)
+{
+	assert(self);
+
+	if (ev_is_active(&self->w)) {
+		sancus_list_del(&self->watchers);
+		ev_signal_stop(self->state->loop, &self->w);
+	}
+}
+
 /*
  * Handler
  */
